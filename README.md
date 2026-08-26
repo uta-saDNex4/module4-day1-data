@@ -6,3 +6,4 @@ module4 cho ngày 4 learning about AI and a Project of it
 - <Lê Thành Long> - < N24DECE028 >
 - <Lý Thanh Sơn> - < N24DECE038 >
 - <Bùi Ngọc An> - < N24DECE001 >
+- <Nguyễn Tấn Đức> - < N24DECE013 >
