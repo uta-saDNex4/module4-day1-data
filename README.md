@@ -11,7 +11,7 @@ WEEBFORCE
 - Nguyen Tan Duc - N24DECE013
 - Le Huynh Bao Minh - N24DECE030
 
-## Files and Functions
+## Files
 - `vgsales.xlsx`: original dataset file.
 - `vgsalesclean.xlsx`: cleaned dataset file after processing.
 - `Weebforce.ipynb`: notebook that loads the original data, cleans the dataset, converts `Year` to integer, removes empty rows, sorts by `Global_Sales` in descending order, and exports the cleaned file.
