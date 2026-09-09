@@ -13,5 +13,11 @@ WEEBFORCE
 
 ## Files
 - `vgsales.xlsx`: original dataset file.
+- `vgsales.csv`: original dataset CSV format.
+- `vgsales_clean.csv`: cleaned dataset file in CSV format.
 - `vgsalesclean.xlsx`: cleaned dataset file after processing.
-- `Weebforce.ipynb`: notebook that loads the original data, cleans the dataset, converts `Year` to integer, removes empty rows, sorts by `Global_Sales` in descending order, and exports the cleaned file.
+- `Weebforce.ipynb`: notebook that loads original data, cleans the dataset and exports.
+- `visualize.ipynb`: Jupyter notebook containing comprehensive visualization and analytics with pre-rendered charts.
+- `dashboard.html`: modern interactive analytics dashboard with real-time multi-dimensional filtering.
+- `generate_charts.py`: Python script for automated batch generation of high-resolution charts.
+- `clean_vgsales.py`: automated data cleaning script.

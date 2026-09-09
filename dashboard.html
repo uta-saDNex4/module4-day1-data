@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Game Sales Analytics Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(31, 41, 55, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-primary: #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --glow-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --card-radius: 16px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+                  var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding-bottom: 60px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .dashboard-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 28px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* Filter Bar */
+    .filter-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 20px;
+      margin-bottom: 28px;
+      box-shadow: var(--glow-shadow);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    select, input[type="text"] {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    /* KPI Metrics Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--card-accent, var(--accent-primary)), transparent);
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .kpi-title {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--card-accent, var(--accent-primary));
+    }
+
+    .kpi-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .kpi-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .col-12 { grid-column: span 12; }
+    .col-8  { grid-column: span 8; }
+    .col-6  { grid-column: span 6; }
+    .col-4  { grid-column: span 4; }
+
+    @media (max-width: 1080px) {
+      .col-8, .col-6, .col-4 {
+        grid-column: span 12;
+      }
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 22px;
+      box-shadow: var(--glow-shadow);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .chart-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .chart-toggle-group {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .toggle-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .chart-body {
+      position: relative;
+      flex: 1;
+      min-height: 320px;
+      width: 100%;
+    }
+
+    /* Table Section */
+    .table-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 22px;
+      box-shadow: var(--glow-shadow);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 14px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    th.num, td.num {
+      text-align: right;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .rank-pill {
+      font-weight: 700;
+      font-size: 12px;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.15);
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .tag-platform {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag-genre {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .page-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: var(--accent-primary);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header>
+      <div class="brand-title">
+        <div class="brand-icon">🎮</div>
+        <div>
+          <h1>Video Game Sales Analytics</h1>
+          <div class="brand-subtitle">Báo cáo trực quan hóa dữ liệu toàn diện & tương tác đa chiều</div>
+        </div>
+      </div>
+      <div>
+        <span class="badge-status">
+          <span class="badge-dot"></span>
+          Đã tải <span id="record-count-badge">16,291</span> bản ghi sạch
+        </span>
+      </div>
+    </header>
+
+    <!-- Bộ lọc tương tác (Filters) -->
+    <div class="filter-panel">
+      <div class="filter-group">
+        <label for="filter-genre">Thể loại (Genre)</label>
+        <select id="filter-genre">
+          <option value="ALL">Tất cả thể loại</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-platform">Nền tảng (Platform)</label>
+        <select id="filter-platform">
+          <option value="ALL">Tất cả nền tảng</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-year-min">Từ năm</label>
+        <select id="filter-year-min">
+          <option value="ALL">Tất cả</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-year-max">Đến năm</label>
+        <select id="filter-year-max">
+          <option value="ALL">Tất cả</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="search-input">Tìm tên Game / NXB</label>
+        <input type="text" id="search-input" placeholder="Ví dụ: Mario, FIFA, EA...">
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-outline" id="btn-reset" title="Đặt lại bộ lọc">Đặt lại</button>
+        <button class="btn btn-primary" id="btn-export" title="Xuất kết quả lọc">Xuất CSV</button>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--card-accent: #6366f1;">
+        <div class="kpi-header">
+          <span class="kpi-title">Tổng Doanh Số Toàn Cầu</span>
+          <div class="kpi-icon">🌍</div>
+        </div>
+        <div class="kpi-value" id="kpi-global-sales">8,820.36M</div>
+        <div class="kpi-desc">Triệu bản game bán ra</div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: #10b981;">
+        <div class="kpi-header">
+          <span class="kpi-title">Bắc Mỹ (NA Sales)</span>
+          <div class="kpi-icon">🇺🇸</div>
+        </div>
+        <div class="kpi-value" id="kpi-na-sales">4,332.97M</div>
+        <div class="kpi-desc" id="kpi-na-share">Chiếm 49.1% toàn cầu</div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: #f59e0b;">
+        <div class="kpi-header">
+          <span class="kpi-title">Châu Âu (EU Sales)</span>
+          <div class="kpi-icon">🇪🇺</div>
+        </div>
+        <div class="kpi-value" id="kpi-eu-sales">2,409.11M</div>
+        <div class="kpi-desc" id="kpi-eu-share">Chiếm 27.3% toàn cầu</div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: #f43f5e;">
+        <div class="kpi-header">
+          <span class="kpi-title">Nhật Bản (JP Sales)</span>
+          <div class="kpi-icon">🇯🇵</div>
+        </div>
+        <div class="kpi-value" id="kpi-jp-sales">1,284.27M</div>
+        <div class="kpi-desc" id="kpi-jp-share">Chiếm 14.6% toàn cầu</div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: #06b6d4;">
+        <div class="kpi-header">
+          <span class="kpi-title">Game Bán Chạy Nhất</span>
+          <div class="kpi-icon">👑</div>
+        </div>
+        <div class="kpi-value" style="font-size: 20px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" id="kpi-top-game">Wii Sports</div>
+        <div class="kpi-desc" id="kpi-top-game-sales">82.74M bản (Wii)</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+      <!-- 1. Top 10 Game Toàn Cầu -->
+      <div class="chart-card col-6">
+        <div class="chart-header">
+          <div class="chart-title">
+            1. Top 10 Game Bán Chạy Nhất
+            <span class="chart-tag">Global Sales</span>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartTopGames"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Doanh Số Theo Thể Loại (Genre) -->
+      <div class="chart-card col-6">
+        <div class="chart-header">
+          <div class="chart-title">
+            2. Doanh Số Theo Thể Loại
+            <span class="chart-tag">Genre Stats</span>
+          </div>
+          <div class="chart-toggle-group">
+            <button class="toggle-btn active" id="btn-genre-total">Tổng</button>
+            <button class="toggle-btn" id="btn-genre-avg">Trung bình</button>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartGenre"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. Xu Hướng Theo Năm -->
+      <div class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            3. Xu Hướng Doanh Số Toàn Cầu & Khu Vực Qua Các Năm
+            <span class="chart-tag">Timeline Trend</span>
+          </div>
+        </div>
+        <div class="chart-body" style="min-height: 360px;">
+          <canvas id="chartYearTrend"></canvas>
+        </div>
+      </div>
+
+      <!-- 4. Top Nhà Phát Hành (Publisher) -->
+      <div class="chart-card col-6">
+        <div class="chart-header">
+          <div class="chart-title">
+            4. Top 10 Nhà Phát Hành Hàng Đầu
+            <span class="chart-tag">Publisher</span>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartPublisher"></canvas>
+        </div>
+      </div>
+
+      <!-- 5. So Sánh Khu Vực Theo Thể Loại / Donut -->
+      <div class="chart-card col-6">
+        <div class="chart-header">
+          <div class="chart-title">
+            5. Cơ Cấu Doanh Số Theo Khu Vực
+            <span class="chart-tag">Regional Market</span>
+          </div>
+          <div class="chart-toggle-group">
+            <button class="toggle-btn active" id="btn-region-stack">Xếp Chồng</button>
+            <button class="toggle-btn" id="btn-region-pie">Thị Phần</button>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartRegional"></canvas>
+        </div>
+      </div>
+
+      <!-- 6. Phân Bố Theo Platform -->
+      <div class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            6. Phân Bố Doanh Số Theo Nền Tảng Máy (Platform)
+            <span class="chart-tag">Console Dominance</span>
+          </div>
+        </div>
+        <div class="chart-body" style="min-height: 340px;">
+          <canvas id="chartPlatform"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="table-card">
+      <div class="chart-header">
+        <div class="chart-title">
+          Danh Sách Bản Ghi Đang Lọc
+          <span class="chart-tag" id="table-record-count">0 bản ghi</span>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Hạng</th>
+              <th>Tên Game</th>
+              <th>Nền tảng</th>
+              <th>Năm</th>
+              <th>Thể loại</th>
+              <th>Nhà phát hành</th>
+              <th class="num">Bắc Mỹ</th>
+              <th class="num">Châu Âu</th>
+              <th class="num">Nhật Bản</th>
+              <th class="num">Khác</th>
+              <th class="num">Toàn cầu</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination-bar">
+        <div id="page-info">Trang 1 / 1</div>
+        <div class="page-controls">
+          <button class="page-btn" id="btn-prev-page">← Trước</button>
+          <button class="page-btn" id="btn-next-page">Sau →</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Module 4 - AI & Data Analytics Project &bull; Dữ liệu nguồn từ vgsales_clean.csv
+    </footer>
+  </div>
+
+  <script src="vgsales_data.js"></script>
+  <script>
+    // State management
+    let rawData = window.VGSALES_DATA || [];
+    let filteredData = [...rawData];
+    let currentPage = 1;
+    const pageSize = 10;
+    let genreViewMode = 'total'; // 'total' | 'avg'
+    let regionViewMode = 'stacked'; // 'stacked' | 'pie'
+
+    // Chart instances
+    let chartTopGames = null;
+    let chartGenre = null;
+    let chartYearTrend = null;
+    let chartPublisher = null;
+    let chartRegional = null;
+    let chartPlatform = null;
+
+    // Palette tokens
+    const COLORS = {
+      cyan: '#06b6d4',
+      emerald: '#10b981',
+      indigo: '#6366f1',
+      violet: '#8b5cf6',
+      amber: '#f59e0b',
+      rose: '#f43f5e',
+      sky: '#0284c7',
+      slate: '#475569'
+    };
+
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+    Chart.defaults.plugins.tooltip.titleColor = '#f8fafc';
+    Chart.defaults.plugins.tooltip.bodyColor = '#cbd5e1';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.1)';
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+    // Khởi tạo các tùy chọn bộ lọc
+    function initFilters() {
+      const genres = [...new Set(rawData.map(d => d.Genre))].sort();
+      const platforms = [...new Set(rawData.map(d => d.Platform))].sort();
+      const years = [...new Set(rawData.map(d => d.Year))].sort((a,b) => a - b);
+
+      const genreSel = document.getElementById('filter-genre');
+      genres.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        genreSel.appendChild(opt);
+      });
+
+      const platSel = document.getElementById('filter-platform');
+      platforms.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        platSel.appendChild(opt);
+      });
+
+      const yearMinSel = document.getElementById('filter-year-min');
+      const yearMaxSel = document.getElementById('filter-year-max');
+      years.forEach(y => {
+        const optMin = document.createElement('option');
+        optMin.value = y;
+        optMin.textContent = y;
+        yearMinSel.appendChild(optMin);
+
+        const optMax = document.createElement('option');
+        optMax.value = y;
+        optMax.textContent = y;
+        yearMaxSel.appendChild(optMax);
+      });
+
+      // Events
+      document.getElementById('filter-genre').addEventListener('change', applyFilters);
+      document.getElementById('filter-platform').addEventListener('change', applyFilters);
+      document.getElementById('filter-year-min').addEventListener('change', applyFilters);
+      document.getElementById('filter-year-max').addEventListener('change', applyFilters);
+      document.getElementById('search-input').addEventListener('input', applyFilters);
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        document.getElementById('filter-genre').value = 'ALL';
+        document.getElementById('filter-platform').value = 'ALL';
+        document.getElementById('filter-year-min').value = 'ALL';
+        document.getElementById('filter-year-max').value = 'ALL';
+        document.getElementById('search-input').value = '';
+        applyFilters();
+      });
+
+      document.getElementById('btn-export').addEventListener('click', exportToCSV);
+
+      // Toggle views
+      document.getElementById('btn-genre-total').addEventListener('click', (e) => {
+        document.querySelectorAll('.chart-toggle-group .toggle-btn').forEach(b => {
+          if (b.id.startsWith('btn-genre')) b.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        genreViewMode = 'total';
+        renderChartGenre();
+      });
+
+      document.getElementById('btn-genre-avg').addEventListener('click', (e) => {
+        document.querySelectorAll('.chart-toggle-group .toggle-btn').forEach(b => {
+          if (b.id.startsWith('btn-genre')) b.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        genreViewMode = 'avg';
+        renderChartGenre();
+      });
+
+      document.getElementById('btn-region-stack').addEventListener('click', (e) => {
+        document.querySelectorAll('.chart-toggle-group .toggle-btn').forEach(b => {
+          if (b.id.startsWith('btn-region')) b.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        regionViewMode = 'stacked';
+        renderChartRegional();
+      });
+
+      document.getElementById('btn-region-pie').addEventListener('click', (e) => {
+        document.querySelectorAll('.chart-toggle-group .toggle-btn').forEach(b => {
+          if (b.id.startsWith('btn-region')) b.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        regionViewMode = 'pie';
+        renderChartRegional();
+      });
+
+      document.getElementById('btn-prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+
+      document.getElementById('btn-next-page').addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      });
+    }
+
+    // Lọc dữ liệu
+    function applyFilters() {
+      const g = document.getElementById('filter-genre').value;
+      const p = document.getElementById('filter-platform').value;
+      const yMin = document.getElementById('filter-year-min').value;
+      const yMax = document.getElementById('filter-year-max').value;
+      const q = document.getElementById('search-input').value.toLowerCase().trim();
+
+      filteredData = rawData.filter(item => {
+        if (g !== 'ALL' && item.Genre !== g) return false;
+        if (p !== 'ALL' && item.Platform !== p) return false;
+        if (yMin !== 'ALL' && item.Year < parseInt(yMin)) return false;
+        if (yMax !== 'ALL' && item.Year > parseInt(yMax)) return false;
+        if (q) {
+          const matchName = item.Name.toLowerCase().includes(q);
+          const matchPub = (item.Publisher || '').toLowerCase().includes(q);
+          if (!matchName && !matchPub) return false;
+        }
+        return true;
+      });
+
+      currentPage = 1;
+      updateKPIs();
+      renderAllCharts();
+      renderTable();
+    }
+
+    // Cập nhật KPI
+    function updateKPIs() {
+      const totalGlobal = filteredData.reduce((acc, d) => acc + (d.Global_Sales || 0), 0);
+      const totalNA = filteredData.reduce((acc, d) => acc + (d.NA_Sales || 0), 0);
+      const totalEU = filteredData.reduce((acc, d) => acc + (d.EU_Sales || 0), 0);
+      const totalJP = filteredData.reduce((acc, d) => acc + (d.JP_Sales || 0), 0);
+
+      document.getElementById('kpi-global-sales').textContent = totalGlobal.toFixed(2) + 'M';
+      document.getElementById('kpi-na-sales').textContent = totalNA.toFixed(2) + 'M';
+      document.getElementById('kpi-eu-sales').textContent = totalEU.toFixed(2) + 'M';
+      document.getElementById('kpi-jp-sales').textContent = totalJP.toFixed(2) + 'M';
+
+      if (totalGlobal > 0) {
+        document.getElementById('kpi-na-share').textContent = `Chiếm ${(totalNA / totalGlobal * 100).toFixed(1)}% toàn cầu`;
+        document.getElementById('kpi-eu-share').textContent = `Chiếm ${(totalEU / totalGlobal * 100).toFixed(1)}% toàn cầu`;
+        document.getElementById('kpi-jp-share').textContent = `Chiếm ${(totalJP / totalGlobal * 100).toFixed(1)}% toàn cầu`;
+      } else {
+        document.getElementById('kpi-na-share').textContent = '0%';
+        document.getElementById('kpi-eu-share').textContent = '0%';
+        document.getElementById('kpi-jp-share').textContent = '0%';
+      }
+
+      if (filteredData.length > 0) {
+        const topGame = filteredData.reduce((prev, cur) => (cur.Global_Sales > prev.Global_Sales) ? cur : prev, filteredData[0]);
+        document.getElementById('kpi-top-game').textContent = topGame.Name;
+        document.getElementById('kpi-top-game-sales').textContent = `${topGame.Global_Sales.toFixed(2)}M bản (${topGame.Platform})`;
+      } else {
+        document.getElementById('kpi-top-game').textContent = 'Không có dữ liệu';
+        document.getElementById('kpi-top-game-sales').textContent = '0M';
+      }
+
+      document.getElementById('table-record-count').textContent = `${filteredData.length.toLocaleString()} bản ghi`;
+    }
+
+    // 1. Chart Top 10 Game
+    function renderChartTopGames() {
+      const ctx = document.getElementById('chartTopGames').getContext('2d');
+      const top10 = [...filteredData].sort((a, b) => b.Global_Sales - a.Global_Sales).slice(0, 10).reverse();
+
+      const labels = top10.map(d => d.Name.length > 22 ? d.Name.substring(0, 20) + '...' : d.Name);
+      const data = top10.map(d => d.Global_Sales);
+      const platforms = top10.map(d => d.Platform);
+
+      if (chartTopGames) chartTopGames.destroy();
+
+      chartTopGames = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Doanh số toàn cầu (Triệu bản)',
+            data: data,
+            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+            hoverBackgroundColor: '#818cf8',
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => top10[items[0].dataIndex].Name,
+                label: (ctx) => `Nền tảng: ${platforms[ctx.dataIndex]} | Doanh số: ${ctx.raw.toFixed(2)}M bản`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              title: { display: true, text: 'Triệu bản' }
+            },
+            y: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Chart Genre
+    function renderChartGenre() {
+      const ctx = document.getElementById('chartGenre').getContext('2d');
+      const genreMap = {};
+
+      filteredData.forEach(d => {
+        if (!genreMap[d.Genre]) genreMap[d.Genre] = { sum: 0, count: 0 };
+        genreMap[d.Genre].sum += d.Global_Sales;
+        genreMap[d.Genre].count += 1;
+      });
+
+      const genres = Object.keys(genreMap);
+      if (genreViewMode === 'total') {
+        genres.sort((a, b) => genreMap[b].sum - genreMap[a].sum);
+      } else {
+        genres.sort((a, b) => (genreMap[b].sum / genreMap[b].count) - (genreMap[a].sum / genreMap[a].count));
+      }
+
+      const values = genres.map(g => {
+        return genreViewMode === 'total' ? genreMap[g].sum : (genreMap[g].sum / genreMap[g].count);
+      });
+
+      if (chartGenre) chartGenre.destroy();
+
+      chartGenre = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: genres,
+          datasets: [{
+            label: genreViewMode === 'total' ? 'Tổng doanh số (M)' : 'Doanh số trung bình / game (M)',
+            data: values,
+            backgroundColor: genreViewMode === 'total' ? 'rgba(6, 182, 212, 0.75)' : 'rgba(245, 158, 11, 0.75)',
+            hoverBackgroundColor: genreViewMode === 'total' ? '#22d3ee' : '#fbbf24',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (c) => `${genreViewMode === 'total' ? 'Tổng' : 'Trung bình'}: ${c.raw.toFixed(2)}M bản (${genreMap[genres[c.dataIndex]].count} games)`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { maxRotation: 45, minRotation: 45 }
+            },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              title: { display: true, text: 'Triệu bản' }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Chart Timeline
+    function renderChartYearTrend() {
+      const ctx = document.getElementById('chartYearTrend').getContext('2d');
+      const yearMap = {};
+
+      filteredData.forEach(d => {
+        const y = d.Year;
+        if (!yearMap[y]) yearMap[y] = { global: 0, na: 0, eu: 0, jp: 0, other: 0 };
+        yearMap[y].global += d.Global_Sales;
+        yearMap[y].na += d.NA_Sales;
+        yearMap[y].eu += d.EU_Sales;
+        yearMap[y].jp += d.JP_Sales;
+        yearMap[y].other += d.Other_Sales;
+      });
+
+      const years = Object.keys(yearMap).map(Number).sort((a, b) => a - b);
+
+      if (chartYearTrend) chartYearTrend.destroy();
+
+      chartYearTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: 'Toàn Cầu (Global)',
+              data: years.map(y => yearMap[y].global),
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 3
+            },
+            {
+              label: 'Bắc Mỹ (NA)',
+              data: years.map(y => yearMap[y].na),
+              borderColor: '#10b981',
+              borderWidth: 2,
+              tension: 0.35,
+              pointRadius: 2,
+              borderDash: [5, 5]
+            },
+            {
+              label: 'Châu Âu (EU)',
+              data: years.map(y => yearMap[y].eu),
+              borderColor: '#f59e0b',
+              borderWidth: 2,
+              tension: 0.35,
+              pointRadius: 2,
+              borderDash: [3, 3]
+            },
+            {
+              label: 'Nhật Bản (JP)',
+              data: years.map(y => yearMap[y].jp),
+              borderColor: '#f43f5e',
+              borderWidth: 2,
+              tension: 0.35,
+              pointRadius: 2,
+              borderDash: [2, 2]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              title: { display: true, text: 'Doanh số (Triệu bản)' }
+            }
+          }
+        }
+      });
+    }
+
+    // 4. Chart Publisher
+    function renderChartPublisher() {
+      const ctx = document.getElementById('chartPublisher').getContext('2d');
+      const pubMap = {};
+
+      filteredData.forEach(d => {
+        const pub = d.Publisher || 'Unknown';
+        pubMap[pub] = (pubMap[pub] || 0) + d.Global_Sales;
+      });
+
+      const topPublishers = Object.entries(pubMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .reverse();
+
+      const labels = topPublishers.map(p => p[0].length > 20 ? p[0].substring(0, 18) + '...' : p[0]);
+      const values = topPublishers.map(p => p[1]);
+
+      if (chartPublisher) chartPublisher.destroy();
+
+      chartPublisher = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Tổng doanh số (M)',
+            data: values,
+            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+            hoverBackgroundColor: '#34d399',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => topPublishers[items[0].dataIndex][0],
+                label: (c) => `Tổng doanh số: ${c.raw.toFixed(1)}M bản`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              title: { display: true, text: 'Triệu bản' }
+            },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // 5. Chart Regional
+    function renderChartRegional() {
+      const ctx = document.getElementById('chartRegional').getContext('2d');
+      if (chartRegional) chartRegional.destroy();
+
+      if (regionViewMode === 'pie') {
+        const totalNA = filteredData.reduce((acc, d) => acc + d.NA_Sales, 0);
+        const totalEU = filteredData.reduce((acc, d) => acc + d.EU_Sales, 0);
+        const totalJP = filteredData.reduce((acc, d) => acc + d.JP_Sales, 0);
+        const totalOther = filteredData.reduce((acc, d) => acc + d.Other_Sales, 0);
+
+        chartRegional = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Bắc Mỹ (NA)', 'Châu Âu (EU)', 'Nhật Bản (JP)', 'Khu vực khác'],
+            datasets: [{
+              data: [totalNA, totalEU, totalJP, totalOther],
+              backgroundColor: ['#3b82f6', '#10b981', '#ef4444', '#8b5cf6'],
+              borderColor: '#111827',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom' },
+              tooltip: {
+                callbacks: {
+                  label: (c) => ` ${c.label}: ${c.raw.toFixed(1)}M (${((c.raw / (totalNA + totalEU + totalJP + totalOther)) * 100).toFixed(1)}%)`
+                }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+      } else {
+        // Stacked bar theo thể loại
+        const genreMap = {};
+        filteredData.forEach(d => {
+          if (!genreMap[d.Genre]) genreMap[d.Genre] = { na: 0, eu: 0, jp: 0, other: 0, total: 0 };
+          genreMap[d.Genre].na += d.NA_Sales;
+          genreMap[d.Genre].eu += d.EU_Sales;
+          genreMap[d.Genre].jp += d.JP_Sales;
+          genreMap[d.Genre].other += d.Other_Sales;
+          genreMap[d.Genre].total += d.Global_Sales;
+        });
+
+        const genres = Object.keys(genreMap).sort((a, b) => genreMap[b].total - genreMap[a].total).slice(0, 8);
+
+        chartRegional = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: genres,
+            datasets: [
+              { label: 'Bắc Mỹ (NA)', data: genres.map(g => genreMap[g].na), backgroundColor: '#3b82f6' },
+              { label: 'Châu Âu (EU)', data: genres.map(g => genreMap[g].eu), backgroundColor: '#10b981' },
+              { label: 'Nhật Bản (JP)', data: genres.map(g => genreMap[g].jp), backgroundColor: '#ef4444' },
+              { label: 'Khác', data: genres.map(g => genreMap[g].other), backgroundColor: '#8b5cf6' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true, grid: { display: false } },
+              y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, title: { display: true, text: 'Triệu bản' } }
+            },
+            plugins: {
+              legend: { position: 'top' }
+            }
+          }
+        });
+      }
+    }
+
+    // 6. Chart Platform
+    function renderChartPlatform() {
+      const ctx = document.getElementById('chartPlatform').getContext('2d');
+      const platMap = {};
+
+      filteredData.forEach(d => {
+        platMap[d.Platform] = (platMap[d.Platform] || 0) + d.Global_Sales;
+      });
+
+      const topPlatforms = Object.entries(platMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+
+      const labels = topPlatforms.map(p => p[0]);
+      const values = topPlatforms.map(p => p[1]);
+
+      if (chartPlatform) chartPlatform.destroy();
+
+      chartPlatform = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Doanh số (Triệu bản)',
+            data: values,
+            backgroundColor: 'rgba(139, 92, 246, 0.75)',
+            hoverBackgroundColor: '#a78bfa',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (c) => `Doanh số: ${c.raw.toFixed(1)}M bản`
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              title: { display: true, text: 'Triệu bản' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderAllCharts() {
+      renderChartTopGames();
+      renderChartGenre();
+      renderChartYearTrend();
+      renderChartPublisher();
+      renderChartRegional();
+      renderChartPlatform();
+    }
+
+    // Render Table
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageData = filteredData.slice(start, end);
+
+      pageData.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="rank-pill">#${d.Rank}</span></td>
+          <td><strong>${d.Name}</strong></td>
+          <td><span class="tag-platform">${d.Platform}</span></td>
+          <td>${d.Year}</td>
+          <td><span class="tag-genre">${d.Genre}</span></td>
+          <td>${d.Publisher || 'N/A'}</td>
+          <td class="num">${d.NA_Sales.toFixed(2)}</td>
+          <td class="num">${d.EU_Sales.toFixed(2)}</td>
+          <td class="num">${d.JP_Sales.toFixed(2)}</td>
+          <td class="num">${d.Other_Sales.toFixed(2)}</td>
+          <td class="num"><strong style="color: #6ee7b7;">${d.Global_Sales.toFixed(2)}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
+      document.getElementById('page-info').textContent = `Trang ${currentPage.toLocaleString()} / ${totalPages.toLocaleString()} (Tổng ${filteredData.length.toLocaleString()} dòng)`;
+      document.getElementById('btn-prev-page').disabled = (currentPage === 1);
+      document.getElementById('btn-next-page').disabled = (currentPage === totalPages || totalPages === 0);
+    }
+
+    // Export CSV
+    function exportToCSV() {
+      if (!filteredData.length) return;
+      const headers = ['Rank', 'Name', 'Platform', 'Year', 'Genre', 'Publisher', 'NA_Sales', 'EU_Sales', 'JP_Sales', 'Other_Sales', 'Global_Sales'];
+      const rows = filteredData.map(d => headers.map(h => `"${(d[h] ?? '').toString().replace(/"/g, '""')}"`).join(','));
+      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'vgsales_filtered.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Init App
+    window.addEventListener('DOMContentLoaded', () => {
+      initFilters();
+      updateKPIs();
+      renderAllCharts();
+      renderTable();
+    });
+  </script>
+</body>
+</html>
